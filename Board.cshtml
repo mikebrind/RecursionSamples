@@ -1,0 +1,31 @@
+﻿@{
+    var db = Database.Open("Board");
+    var threads = db.Query("SELECT * FROM Posts");
+
+}
+
+@BuildBoard(threads, null, 0)
+        <!--INSERT INTO Posts(ThreadId, Content, UserName) VALUES (1,  'Third Post on the first thread', 'Pete')-->
+
+@helper BuildBoard(IEnumerable<dynamic> data, int? threadid, int level){
+    var posts = data.Where(p => p.ThreadId == threadid);
+    var topLevel = true;
+    if (posts.Any()) {
+        if(posts.First().ThreadId != null){
+            level++;
+            topLevel = false;
+        }
+        foreach (var post in posts) {
+            if (topLevel) {
+                @:<div class="thread">
+            }
+            <div style="padding-left:@(level * 20)px;">
+                @post.Content - <em>@post.DatePosted.ToString("F")</em>
+            </div>
+            @BuildBoard(data, post.PostId, level);
+            if (topLevel) {
+                @:</div>
+            }
+        }
+    }
+}

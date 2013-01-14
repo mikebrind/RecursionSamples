@@ -1,0 +1,95 @@
+﻿@{
+    Validation.Add("Text", Validator.Required(), Validator.StringLength(50));
+    Validation.Add("DisplayOrder", Validator.Integer());
+
+    var db = Database.Open("TreeView");
+    var nodeSql = "SELECT * FROM Nodes";
+    IEnumerable<SelectListItem> nodes = null;
+    var nodeText = string.Empty;
+    var displayOrder = 0;
+    int? parentId = null;
+    IEnumerable<dynamic> data = null; 
+    
+
+    if(Request["id"].IsInt() && !IsPost){
+        data = db.Query(nodeSql);
+        var id = Request["id"].AsInt();
+        nodeText = data.First(d => d.Id == id).Text;
+        parentId = data.First(d => d.Id == id).ParentId;
+        displayOrder = data.First(d => d.Id == id).DisplayOrder;
+        nodes = data.Select(item => new SelectListItem { Value = item.Id.ToString(), Text = item.Text, Selected = item.Id == parentId });
+    }
+
+    if(IsPost && Validation.IsValid()){
+        if(Request["Action"] == "Edit"){
+            var sql = "UPDATE Nodes Set ParentId = @0, Text = @1, DisplayOrder = @2 WHERE Id = @3";
+            nodeText = Request["Text"];
+            displayOrder = Request["DisplayOrder"].AsInt();
+            var pId = Request["ParentId"].IsEmpty() ? DBNull.Value : (object)Request["ParentId"];
+            db.Execute(sql, pId, nodeText, displayOrder, Request["id"]);
+        }
+        if(Request["Action"] == "Delete"){
+            data = db.Query(nodeSql);
+            var idList = new List<int>();
+            var ids = GetIds(data, Request["id"].AsInt(), null, ref idList);
+            var parms = ids.Select((s, i) => "@" + i.ToString()).ToArray();
+            var inclause = string.Join(",", parms);
+            var sql = "DELETE FROM Nodes WHERE Id IN ({0})";
+            var idsArray = ids.Select(i => i.ToString()).ToArray();
+            db.Execute(string.Format(sql,  inclause), idsArray);
+        }
+    }
+    data = db.Query(nodeSql);
+}
+@if(Request["id"].IsEmpty() || IsPost){
+    <h1>Select Node</h1>
+    @BuildTreeView(data, null, 0)
+}
+
+@if((Request["id"].IsInt() && !IsPost) || (IsPost && !Validation.IsValid())){
+    <h1>Edit Node</h1>
+    <form method="post">
+        <div>
+            @Html.Label("Text: ", "Text") @Html.TextBox("Text", nodeText) @Html.ValidationMessage("Text")
+        </div>
+        @if(parentId.HasValue){
+        <div>
+            @Html.Label("Parent: ", "ParentId") @Html.DropDownList("ParentId", nodes)
+        </div>
+        }
+        <div>
+            @Html.Label("Display Order: ", "DisplayOrder") @Html.TextBox("DisplayOrder", displayOrder, new {size = 2}) @Html.ValidationMessage("DisplayOrder")
+        </div>
+        <div>
+            <input type="submit" name="Action" value="Delete" /> <input type="submit" name="Action" value="Edit" />
+        </div>
+    </form>
+}
+
+@helper  BuildTreeView(IEnumerable<dynamic> data, int? parentid, int level) {
+    var nodes = data.Where(n => n.ParentId == parentid);
+    if (nodes.Any()) {
+        if(nodes.First().ParentId != null){
+            level++;
+        }
+        foreach (var node in nodes.OrderBy(n => n.DisplayOrder)) {
+            <div style="padding-left:@(level * 20)px;">
+                <a href="~/TreeViewAdmin/EditNode?id=@node.Id">@node.Text</a>
+            </div>
+            @BuildTreeView(data, node.Id, level);
+        }
+    }
+}
+
+@functions {
+    public static List<int> GetIds(IEnumerable<dynamic> data, int? id, int? parentId, ref List<int> ids ){
+        var items = id.HasValue ? data.Where(i => i.Id == id) : data.Where(i => i.ParentId == parentId);
+        if(items.Any()){
+            foreach(var item in items){
+                ids.Add(item.Id);
+                GetIds(data, null, item.Id, ref ids);
+            }
+        }
+        return ids;
+    }
+} 

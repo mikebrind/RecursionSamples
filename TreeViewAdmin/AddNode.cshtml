@@ -1,0 +1,58 @@
+﻿@{
+    Validation.Add("Text", Validator.Required(), Validator.StringLength(50));
+    Validation.Add("DisplayOrder", Validator.Integer());
+
+    var db = Database.Open("TreeView");
+    var sql = string.Empty;
+    var message = string.Empty;
+    var displayOrder = Request["DisplayOrder"].IsInt() ? Request["DisplayOrder"].AsInt() : 0;
+
+    if(IsPost && Validation.IsValid()){
+        sql = "INSERT INTO Nodes (ParentId, Text, DisplayOrder) VALUES (@0, @1, @2)";
+        var text = Request["Text"];
+        var parentId = Request["ParentId"].IsEmpty() ? DBNull.Value : (object)Request["ParentId"];
+        db.Execute(sql, parentId, text, displayOrder);
+        message = text + " added";
+    }
+    
+    sql = "SELECT * FROM Nodes";
+    var data = db.Query(sql);
+    var nodes = data.Select(item => new SelectListItem { Value = item.Id.ToString(), Text = item.Text, Selected = item.Id.ToString() == Request["ParentId"] });
+}
+<h1>Add Node</h1>
+<div>
+    @message
+</div>
+<form method="post">
+    <div>
+        @Html.Label("Text: ", "Text") @Html.TextBox("Text", Request["Text"]) @Html.ValidationMessage("Text")
+    </div>
+    @if(nodes.Any()){
+    <div>
+        @Html.Label("Parent: ", "ParentId") @Html.DropDownList("ParentId", nodes)
+    </div>
+    }
+    <div>
+        @Html.Label("Display Order: ", "DisplayOrder") @Html.TextBox("DisplayOrder: ", displayOrder, new {size = 2}) @Html.ValidationMessage("DisplayOrder")
+    </div>
+    <div>
+        <input type="submit" />
+    </div>
+</form>
+
+@BuildTreeView(data, null, 0)
+
+@helper  BuildTreeView(IEnumerable<dynamic> data, int? parentid, int level) {
+    var nodes = data.Where(n => n.ParentId == parentid).OrderBy(n => n.DisplayOrder);
+    if (nodes.Any()) {
+        if(nodes.First().ParentId != null){
+            level++;
+        }
+        foreach (var node in nodes) {
+            <div style="padding-left:@(level * 20)px;">
+                @node.Text
+            </div>
+            @BuildTreeView(data, node.Id, level);
+        }
+    }
+}

@@ -1,0 +1,53 @@
+﻿@{
+    var Menu = new List<MenuItem> {
+        new MenuItem {Id = 1, ParentId = null, MenuName = "File"}, 
+        new MenuItem {Id = 2, ParentId = 1, MenuName = "Open"}, 
+        new MenuItem {Id = 3, ParentId = 1, MenuName = "Save"}, 
+        new MenuItem {Id = 4, ParentId = 1, MenuName = "Export"}, 
+        new MenuItem {Id = 5, ParentId = 4, MenuName = "To PDF"}, 
+        new MenuItem {Id = 6, ParentId = 4, MenuName = "To Word"}, 
+        new MenuItem {Id = 7, ParentId = 6, MenuName = "Doc"}, 
+        new MenuItem {Id = 8, ParentId = 6, MenuName = "DocX"}, 
+        new MenuItem {Id = 9, ParentId = 1, MenuName = "Exit"}, 
+        new MenuItem {Id = 10, ParentId = null, MenuName = "Edit"}, 
+        new MenuItem {Id = 11, ParentId = 10, MenuName = "Cut"}, 
+        new MenuItem {Id = 12, ParentId = 10, MenuName = "Copy"}, 
+        new MenuItem {Id = 13, ParentId = 10, MenuName = "Paste"}, 
+        new MenuItem {Id = 14, ParentId = 10, MenuName = "Delete"},
+        new MenuItem {Id = 15, ParentId = 4, MenuName = "To XML"},
+        new MenuItem {Id = 16, ParentId =13, MenuName = "Paste Special"},
+        new MenuItem {Id = 17, ParentId = 13, MenuName = "Paste As HTML"}
+     };
+}
+
+@BuildMenu(Menu, null, -1)
+
+@helper  BuildMenu(List<MenuItem> menu, int? parentid, int level) {
+    var items = menu.Where(m => m.ParentId == parentid);
+    var topLevel = true;
+    if (items.Any()) {
+        if(items.First().ParentId.HasValue){
+            level++;
+            topLevel = false;
+        }
+        foreach (var item in items) {
+            if (topLevel) {
+                @:<div class="menu">
+            }
+            for (var i = 0; i < level; i++) {
+                @:&nbsp;&nbsp;&nbsp;&nbsp;
+            }
+            if (topLevel) {
+                @:<strong>
+            }
+            @item.MenuName<br />
+            if (topLevel) {
+                @:</strong>
+            }
+            @BuildMenu(menu, item.Id, level);
+            if (topLevel) {
+                @:</div>
+            }
+        }
+    }
+}

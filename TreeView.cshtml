@@ -1,0 +1,21 @@
+﻿@{
+    var db = Database.Open("TreeView");
+    var treeView = db.Query("SELECT * FROM Nodes");
+}
+
+@BuildTreeView(treeView, null, 0)
+<a href="~/TreeViewAdmin/AddNode">Add</a> <a href="~/TreeViewAdmin/EditNode">Edit</a>
+@helper  BuildTreeView(IEnumerable<dynamic> data, int? parentid, int level) {
+    var nodes = data.Where(n => n.ParentId == parentid).OrderBy(n => n.DisplayOrder);
+    if (nodes.Any()) {
+        if(nodes.First().ParentId != null){
+            level++;
+        }
+        foreach (var node in nodes) {
+            <div style="padding-left:@(level * 20)px;">
+                @node.Text
+            </div>
+            @BuildTreeView(data, node.Id, level);
+        }
+    }
+}
