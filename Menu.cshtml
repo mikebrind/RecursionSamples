@@ -22,6 +22,11 @@
 
 @BuildMenu(Menu, null, -1)
 
+<div style="clear: both">
+    <a href="~/">Home</a>
+</div>
+
+
 @helper  BuildMenu(List<MenuItem> menu, int? parentid, int level) {
     var items = menu.Where(m => m.ParentId == parentid);
     var topLevel = true;

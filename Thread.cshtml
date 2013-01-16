@@ -1,0 +1,29 @@
+﻿@{
+    var db = Database.Open("Board");
+    var posts = db.Query("SELECT * FROM Posts WHERE ThreadId = @0", UrlData[0]);
+}
+
+<h2>@posts.First().Title</h2>
+<p>@(posts.Count()-1) @(posts.Count() - 1 == 1 ? "reply" :"replies")</p>
+<div style="width: 500px;">
+    @BuildThread(posts, null, 0)
+</div>
+       
+<a href="~/Board/">Back to board</a><br />
+<a href="~/">Home</a>
+
+@helper BuildThread(IEnumerable<dynamic> data, int? parentid, int level){
+    var posts = data.Where(p => p.ParentId == parentid);
+    if (posts.Any()) {
+        if(posts.First().ParentId != null){
+            level++;
+        }
+        foreach (var post in posts) {
+            <div style="margin-left:@(level * 20)px; margin-bottom: 5px;border: 1px solid #dddddd;">
+                <strong>@post.Title - <em>@post.DatePosted.ToString("F")</em></strong><br />
+                <p>@post.Content</p>
+            </div>
+            @BuildThread(data, post.PostId, level);
+        }
+    }
+}

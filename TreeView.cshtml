@@ -5,6 +5,10 @@
 
 @BuildTreeView(treeView, null, 0)
 <a href="~/TreeViewAdmin/AddNode">Add</a> <a href="~/TreeViewAdmin/EditNode">Edit</a>
+<br />
+<a href="~/">Home</a>
+
+
 @helper  BuildTreeView(IEnumerable<dynamic> data, int? parentid, int level) {
     var nodes = data.Where(n => n.ParentId == parentid).OrderBy(n => n.DisplayOrder);
     if (nodes.Any()) {
