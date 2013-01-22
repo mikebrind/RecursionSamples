@@ -17,3 +17,8 @@ body {
 a {
     color:  #0000ff;
 }
+
+#home{
+    clear: both;
+    margin-top:  20px;
+}

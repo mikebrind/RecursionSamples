@@ -16,8 +16,12 @@
     }
     
     sql = "SELECT * FROM Nodes";
-    var data = db.Query(sql);
-    var nodes = data.Select(item => new SelectListItem { Value = item.Id.ToString(), Text = item.Text, Selected = item.Id.ToString() == Request["ParentId"] });
+    var treeView = db.Query(sql);
+    var nodes = treeView.Select(item => new SelectListItem {
+        Value = item.Id.ToString(), 
+        Text = item.Text, 
+        Selected = item.Id.ToString() == Request["ParentId"]
+    });
 }
 <h1>Add Node</h1>
 <div>
@@ -25,24 +29,29 @@
 </div>
 <form method="post">
     <div>
-        @Html.Label("Text: ", "Text") @Html.TextBox("Text", Request["Text"]) @Html.ValidationMessage("Text")
+        @Html.Label("Text: ", "Text") 
+        @Html.TextBox("Text", Request["Text"]) 
+        @Html.ValidationMessage("Text")
     </div>
     @if(nodes.Any()){
     <div>
-        @Html.Label("Parent: ", "ParentId") @Html.DropDownList("ParentId", nodes)
+        @Html.Label("Parent: ", "ParentId") 
+        @Html.DropDownList("ParentId", nodes)
     </div>
     }
     <div>
-        @Html.Label("Display Order: ", "DisplayOrder") @Html.TextBox("DisplayOrder: ", displayOrder, new {size = 2}) @Html.ValidationMessage("DisplayOrder")
+        @Html.Label("Display Order: ", "DisplayOrder") 
+        @Html.TextBox("DisplayOrder: ", displayOrder, new { size = 2 }) 
+        @Html.ValidationMessage("DisplayOrder")
     </div>
     <div>
         <input type="submit" />
     </div>
 </form>
 
-@BuildTreeView(data, null, 0)
+@BuildTreeView(treeView)
 
-@helper  BuildTreeView(IEnumerable<dynamic> data, int? parentid, int level) {
+@helper  BuildTreeView(IEnumerable<dynamic> data, int? parentid = null, int level = 0) {
     var nodes = data.Where(n => n.ParentId == parentid).OrderBy(n => n.DisplayOrder);
     if (nodes.Any()) {
         if(nodes.First().ParentId != null){

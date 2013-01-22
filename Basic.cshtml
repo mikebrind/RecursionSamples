@@ -1,0 +1,43 @@
+﻿@{
+    Page.Title = "Basic Example";
+    var input = Request["number"].AsInt();
+    var result = Add(input);
+}
+
+<div>
+    Result: 
+    @for(var i = input; i > 0; i--){
+        @i  @(i == 1 ? " = " : " + ")
+    }
+    @result
+</div>
+
+<form method="post">
+    @Html.Label("Enter number: ", "number")
+    @Html.TextBox("number", input, new { size = "5" })
+    <input type="submit" />
+</form>
+
+@functions{
+
+    public static int Add(int number){
+        if(number > 0){
+            return number + Add(number -1);
+        }
+        return 0;
+    }
+    
+}
+
+@functions {
+
+    public static int AddWithoutRecursion(int number) {
+        var temp = 0;
+        while (number > 0) {
+            temp += number;
+            number --;
+        }
+        return temp;
+    }
+    
+}

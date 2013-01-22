@@ -1,18 +1,24 @@
 ﻿@{
+    if(!UrlData[0].IsInt()){
+        Response.Redirect("~/Board");
+    }
+    Page.Title = "Discussion Board Example";
     var db = Database.Open("Board");
     var posts = db.Query("SELECT * FROM Posts WHERE ThreadId = @0", UrlData[0]);
+    if(!posts.Any()){
+        Response.Redirect("~/Board");
+    }
 }
 
 <h2>@posts.First().Title</h2>
 <p>@(posts.Count()-1) @(posts.Count() - 1 == 1 ? "reply" :"replies")</p>
 <div style="width: 500px;">
-    @BuildThread(posts, null, 0)
+    @BuildThread(posts)
 </div>
        
-<a href="~/Board/">Back to board</a><br />
-<a href="~/">Home</a>
+<a href="~/Board/">Back to board</a>
 
-@helper BuildThread(IEnumerable<dynamic> data, int? parentid, int level){
+@helper BuildThread(IEnumerable<dynamic> data, int? parentid = null, int level = 0){
     var posts = data.Where(p => p.ParentId == parentid);
     if (posts.Any()) {
         if(posts.First().ParentId != null){

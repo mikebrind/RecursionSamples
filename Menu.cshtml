@@ -1,33 +1,31 @@
 ﻿@{
-    var Menu = new List<MenuItem> {
-        new MenuItem {Id = 1, ParentId = null, MenuName = "File"}, 
-        new MenuItem {Id = 2, ParentId = 1, MenuName = "Open"}, 
-        new MenuItem {Id = 3, ParentId = 1, MenuName = "Save"}, 
-        new MenuItem {Id = 4, ParentId = 1, MenuName = "Export"}, 
-        new MenuItem {Id = 5, ParentId = 4, MenuName = "To PDF"}, 
-        new MenuItem {Id = 6, ParentId = 4, MenuName = "To Word"}, 
-        new MenuItem {Id = 7, ParentId = 6, MenuName = "Doc"}, 
-        new MenuItem {Id = 8, ParentId = 6, MenuName = "DocX"}, 
-        new MenuItem {Id = 9, ParentId = 1, MenuName = "Exit"}, 
-        new MenuItem {Id = 10, ParentId = null, MenuName = "Edit"}, 
-        new MenuItem {Id = 11, ParentId = 10, MenuName = "Cut"}, 
-        new MenuItem {Id = 12, ParentId = 10, MenuName = "Copy"}, 
-        new MenuItem {Id = 13, ParentId = 10, MenuName = "Paste"}, 
-        new MenuItem {Id = 14, ParentId = 10, MenuName = "Delete"},
-        new MenuItem {Id = 15, ParentId = 4, MenuName = "To XML"},
-        new MenuItem {Id = 16, ParentId =13, MenuName = "Paste Special"},
-        new MenuItem {Id = 17, ParentId = 13, MenuName = "Paste As HTML"}
+    Page.Title = "Menu Example";
+
+    var menu = new List<Node> {
+        new Node {Id = 1, ParentId = null, Name = "File"}, 
+        new Node {Id = 2, ParentId = 1, Name = "Open"}, 
+        new Node {Id = 3, ParentId = 1, Name = "Save"}, 
+        new Node {Id = 4, ParentId = 1, Name = "Export"}, 
+        new Node {Id = 5, ParentId = 4, Name = "To PDF"}, 
+        new Node {Id = 6, ParentId = 4, Name = "To Word"}, 
+        new Node {Id = 7, ParentId = 6, Name = "Doc"}, 
+        new Node {Id = 8, ParentId = 6, Name = "DocX"}, 
+        new Node {Id = 9, ParentId = 1, Name = "Exit"}, 
+        new Node {Id = 10, ParentId = null, Name = "Edit"}, 
+        new Node {Id = 11, ParentId = 10, Name = "Cut"}, 
+        new Node {Id = 12, ParentId = 10, Name = "Copy"}, 
+        new Node {Id = 13, ParentId = 10, Name = "Paste"}, 
+        new Node {Id = 14, ParentId = 10, Name = "Delete"},
+        new Node {Id = 15, ParentId = 4, Name = "To XML"},
+        new Node {Id = 16, ParentId =13, Name = "Paste Special"},
+        new Node {Id = 17, ParentId = 13, Name = "Paste As HTML"}
      };
 }
 
-@BuildMenu(Menu, null, -1)
-
-<div style="clear: both">
-    <a href="~/">Home</a>
-</div>
+@BuildMenu(menu)
 
 
-@helper  BuildMenu(List<MenuItem> menu, int? parentid, int level) {
+@helper  BuildMenu(List<Node> menu, int? parentid = null, int level = 0) {
     var items = menu.Where(m => m.ParentId == parentid);
     var topLevel = true;
     if (items.Any()) {
@@ -40,16 +38,16 @@
                 @:<div class="menu">
             }
             for (var i = 0; i < level; i++) {
-                @:&nbsp;&nbsp;&nbsp;&nbsp;
+                @:&nbsp;&nbsp;
             }
             if (topLevel) {
                 @:<strong>
             }
-            @item.MenuName<br />
+            @item.Name<br />
             if (topLevel) {
                 @:</strong>
             }
-            @BuildMenu(menu, item.Id, level);
+            @BuildMenu(menu, item.Id, level)
             if (topLevel) {
                 @:</div>
             }
